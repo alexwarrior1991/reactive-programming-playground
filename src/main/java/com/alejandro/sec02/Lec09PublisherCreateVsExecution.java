@@ -13,7 +13,7 @@ public class Lec09PublisherCreateVsExecution {
 
     public static void main(String[] args) throws InterruptedException {
 
-       getName();
+       getName().subscribe(Util.subscriber());
 
     }
 
