@@ -12,6 +12,7 @@ public class Lec04FluxCreateDownstreamDemand {
 
     public static void main(String[] args) {
         produceOnDemand();
+//        produceEarly();
     }
 
     private static void produceEarly() {
