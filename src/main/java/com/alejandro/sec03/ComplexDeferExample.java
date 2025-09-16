@@ -43,6 +43,8 @@ public class ComplexDeferExample {
         Util.sleepSeconds(2);
         dynamicFlux.subscribe(Util.subscriber("Subscriber 3"));
 
+        Util.sleepSeconds(3);
+
     }
 
 

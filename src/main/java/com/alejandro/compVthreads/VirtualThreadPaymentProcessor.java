@@ -12,7 +12,7 @@ public class VirtualThreadPaymentProcessor {
 
     private static final Random random = new Random();
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         System.out.println("Iniciando procesamiento de transacciones con virtual threads...");
 
         // Generar transacciones aleatorias
@@ -20,7 +20,7 @@ public class VirtualThreadPaymentProcessor {
         List<CompletableFuture<TransactionResult>> futures = new ArrayList<>();
 
         // Usar un ExecutorService basado en virtual threads
-        try(ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             // Procesar cada transacción
             transactions.stream()
                     .map(transaction -> processTransaction(transaction, executor))
@@ -31,16 +31,17 @@ public class VirtualThreadPaymentProcessor {
                     futures.toArray(new CompletableFuture[0]));
 
             // Obtener y mostrar todos los resultados
-            allDone.thenRun(() -> {
-                futures.forEach(future -> {
-                    try {
-                        System.out.println(future.get());
-                    }catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
+            CompletableFuture<List<TransactionResult>> allResults = allDone
+                    .thenApply(v -> futures.stream()
+                                    .map(CompletableFuture::join)
+                                    .toList()// no bloquea por tarea hasta que allOf completó
+                    );
+
+            allResults.thenAccept(results -> {
+                results.forEach(System.out::println);
                 System.out.println("Procesamiento de todas las transacciones completado");
-            }).get();
+            }).join();// única espera para que el main no termine antes
+
         }
     }
 
@@ -130,9 +131,17 @@ public class VirtualThreadPaymentProcessor {
             this.userEmail = userEmail;
         }
 
-        public String getId() { return id; }
-        public double getAmount() { return amount; }
-        public String getUserEmail() { return userEmail; }
+        public String getId() {
+            return id;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public String getUserEmail() {
+            return userEmail;
+        }
     }
 
     static class ValidationResult {
@@ -144,8 +153,13 @@ public class VirtualThreadPaymentProcessor {
             this.message = message;
         }
 
-        public boolean isValid() { return valid; }
-        public String getMessage() { return message; }
+        public boolean isValid() {
+            return valid;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 
     static class FraudCheckResult {
@@ -157,8 +171,13 @@ public class VirtualThreadPaymentProcessor {
             this.message = message;
         }
 
-        public boolean isFraudulent() { return fraudulent; }
-        public String getMessage() { return message; }
+        public boolean isFraudulent() {
+            return fraudulent;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 
     static class TransactionResult {
